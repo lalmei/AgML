@@ -184,7 +184,7 @@ def download_model(model_name, dest_dir, redownload = False):
         raise e
 
 
-def download_detector(detector_name, dest_dir, redownload = False):
+def download_detector(detector_name, dest_dir, redownload=False):
     """
     Downloads a detector from the agdata-data s3 file storage.
 
@@ -247,10 +247,10 @@ def download_detector(detector_name, dest_dir, redownload = False):
         raise e
 
     # Unzip downloaded dataset
-    with zipfile.ZipFile(model_download_path, 'r') as z:
-        print(f'[AgML Download]: Extracting files for {detector_name}... ', end = '')
-        z.extractall(path = dest_dir)
-        print('Done!')
+    with zipfile.ZipFile(model_download_path, "r") as z:
+        print(f"[AgML Download]: Extracting files for {detector_name}... ", end="")
+        z.extractall(path=dest_dir)
+        print("Done!")
 
     # Delete zipped file
     if os.path.exists(model_download_path):

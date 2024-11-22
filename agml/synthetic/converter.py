@@ -25,7 +25,7 @@ import cv2
 import numpy as np
 
 from agml.utils.io import recursive_dirname, get_dir_list, get_file_list
-from agml.utils.logging import tqdm
+# from agml.utils.logging import tqdm
 
 
 @dataclass
@@ -126,7 +126,7 @@ class HeliosDataFormatConverter(object):
                 raise e
             else:
                 self._remove_existing_image_dirs()
-        elif self._meta.annotation_type == 'semantic_segmentation':
+        elif self._meta.annotation_type == "semantic_segmentation":
             try:
                 self._convert_semantic_segmentation_dataset()
             except Exception as e:
@@ -166,9 +166,14 @@ class HeliosDataFormatConverter(object):
         for indx, image in enumerate(image_annotation_map.keys()):
             image_id_map[image] = indx + 1
             fpath = os.path.basename(image_new_map[image])
-            image_coco.append({
-                'file_name': fpath, 'width': self._meta.image_size[0],
-                'height': self._meta.image_size[1], 'id': indx + 1})
+            image_coco.append(
+                {
+                    "file_name": fpath,
+                    "width": self._meta.image_size[0],
+                    "height": self._meta.image_size[1],
+                    "id": indx + 1,
+                }
+            )
 
         # Generate the annotation COCO JSON contents.
         annotation_coco = []
@@ -211,18 +216,18 @@ class HeliosDataFormatConverter(object):
             if not os.path.exists(path):
                 err = FileNotFoundError(
                     f"The annotation file {path} for the label `{label}` "
-                    f"for the image at {image_dir} does not exist. ")
-                if label == 'fruits':
-                    path = txt_fmt.format('clusters')
+                    f"for the image at {image_dir} does not exist. "
+                )
+                if label == "fruits":
+                    path = txt_fmt.format("clusters")
                     if not os.path.exists(path):
                         raise err
                 else:
                     raise err
 
             # Read the text file and get all of the lines in float format.
-            with open(path, 'r') as f:
-                annotations = np.array(
-                    [line.replace('\n', '').strip().split(' ') for line in f.readlines()])
+            with open(path, "r") as f:
+                annotations = np.array([line.replace("\n", "").strip().split(" ") for line in f.readlines()])
 
             if len(annotations) > 0:
                 annotations = annotations[:, 1:].astype(np.float32)
@@ -269,16 +274,15 @@ class HeliosDataFormatConverter(object):
 
     def _cleanup_failed_object_detection_conversion(self):
         """Cleans up the remnants of a failed conversion for object detection."""
-        if os.path.exists(os.path.join(self._meta.path, 'annotations.json')):
-            os.remove(os.path.join(self._meta.path, 'annotations.json'))
-        if os.path.exists(os.path.join(self._meta.path, 'images')):
-            shutil.rmtree(os.path.join(self._meta.path, 'images'))
+        if os.path.exists(os.path.join(self._meta.path, "annotations.json")):
+            os.remove(os.path.join(self._meta.path, "annotations.json"))
+        if os.path.exists(os.path.join(self._meta.path, "images")):
+            shutil.rmtree(os.path.join(self._meta.path, "images"))
 
     def _convert_semantic_segmentation_dataset(self):
         """Converts the format of a semantic segmentation dataset to AgML's format."""
         # Get all of the images in the dataset.
-        jpeg_images = glob.glob(
-            os.path.join(self._meta.path, "image*/**/*.jpeg"), recursive = True)
+        jpeg_images = glob.glob(os.path.join(self._meta.path, "image*/**/*.jpeg"), recursive=True)
 
         # For each of the images, get their corresponding annotations.
         num_to_label = None
@@ -327,44 +331,39 @@ class HeliosDataFormatConverter(object):
 
     def _cleanup_failed_semantic_segmentation_conversion(self):
         """Cleans up the remnants of a failed conversion for semantic segmentation."""
-        if os.path.exists(os.path.join(self._meta.path, 'images')):
-            shutil.rmtree(os.path.join(self._meta.path, 'images'))
-        if os.path.exists(os.path.join(self._meta.path, 'annotations')):
-            shutil.rmtree(os.path.join(self._meta.path, 'annotations'))
+        if os.path.exists(os.path.join(self._meta.path, "images")):
+            shutil.rmtree(os.path.join(self._meta.path, "images"))
+        if os.path.exists(os.path.join(self._meta.path, "annotations")):
+            shutil.rmtree(os.path.join(self._meta.path, "annotations"))
 
     def _remove_existing_image_dirs(self):
         """Removes the original image directories after a successful conversion."""
-        image_dirs = [
-            dir_ for dir_ in get_dir_list(self._meta.path) if dir_[-1].isnumeric()]
+        image_dirs = [dir_ for dir_ in get_dir_list(self._meta.path) if dir_[-1].isnumeric()]
         for image_dir in image_dirs:
             shutil.rmtree(os.path.join(self._meta.path, image_dir))
 
     @staticmethod
     def _infer_ag_task(ml_task):
-        if ml_task == 'object_detection':
-            return 'fruit_detection'
-        elif ml_task == 'semantic_segmentation':
-            return 'fruit_segmentation'
+        if ml_task == "object_detection":
+            return "fruit_detection"
+        elif ml_task == "semantic_segmentation":
+            return "fruit_segmentation"
 
     def _make_agml_info_json(self):
         """Constructs a JSON file with information for an AgMLDataLoader"""
         info_json = {
-            'classes': self._meta.labels,
-            'ml_task': self._meta.annotation_type,
-            'ag_task': self._infer_ag_task(self._meta.annotation_type),
-            'location': 'synthetic',
-            'sensor_modality': 'rgb',
-            'real_synthetic': 'synthetic',
-            'n_images': len(get_file_list(os.path.join(self._meta.path, 'images'))),
-            'platform': 'ground',
-            'input_data_format': 'jpeg',
-            'annotation_format': 'coco_json'
-            if self._meta.annotation_type in ['object_detection'] else 'image'
+            "classes": self._meta.labels,
+            "ml_task": self._meta.annotation_type,
+            "ag_task": self._infer_ag_task(self._meta.annotation_type),
+            "location": "synthetic",
+            "sensor_modality": "rgb",
+            "real_synthetic": "synthetic",
+            "n_images": len(get_file_list(os.path.join(self._meta.path, "images"))),
+            "platform": "ground",
+            "input_data_format": "jpeg",
+            "annotation_format": "coco_json" if self._meta.annotation_type in ["object_detection"] else "image",
         }
 
         # Save the info JSON to a file.
-        with open(os.path.join(self._meta.path, '.metadata', 'agml_info.json'), 'w') as f:
+        with open(os.path.join(self._meta.path, ".metadata", "agml_info.json"), "w") as f:
             json.dump(info_json, f)
-
-
-
